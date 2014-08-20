@@ -1,37 +1,85 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>My Device Info</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
-    <meta name="description" content="Kuwait Municipality Service Requister">
-    <meta name="author" content="Eng. Hadi Abdulazim">
+    <head>
+        <meta charset="utf-8">
+        <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+        <title>Geolocation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        
+        
+        <style type="text/css">
+            html { height: 100% }
+            body { height: 100%; margin: 0; padding: 0 }
+            #mapDiv { height: 100%; width: 100%; }
+        </style>
 
-    <!--<script type="text/javascript" charset="utf-8" src="cordova.js"></script>-->
-    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
-    <script type="text/javascript" charset="utf-8">
-
-        // Wait for PhoneGap to load
-        //
-        document.addEventListener("deviceready", onDeviceReady, false);
-
-        // PhoneGap is ready
-        //
-        function onDeviceReady() {
-        var element = document.getElementById('deviceProperties');
-
-        element.innerHTML = 'Device Name: '     + device.name     + '<br />' + 
-                            'Device PhoneGap: ' + device.phonegap + '<br />' + 
-                            'Device Platform: ' + device.platform + '<br />' + 
-                            'Device UUID: '     + device.uuid     + '<br />' + 
-                            'Device Version: '  + device.version  + '<br />';
-        }
-
-    </script>
-</head>
-<body>
-    <p id="deviceProperties">Loading device properties...</p>
-</body>
+        <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyD2lJTwOBqmT1hCegkDP6ekXC5oi9xApc4&sensor=true"
+                type="text/javascript">
+        </script>
+        <script type="text/javascript" charset="utf-8">
+            //Add event listener to run when the device is ready
+            document.addEventListener("deviceready", onDeviceReady, false);
+            
+            //Device is ready, Get geolocation data 
+            function onDeviceReady() {
+                navigator.geolocation.getCurrentPosition(onSuccess,onError);
+            }
+            
+            //If successful, get position data
+            function onSuccess(position) {
+                var latLng = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+                //Select map options
+                var mapOptions = {
+                    center: latLng,
+                    panControl: false,
+                    zoomControl: true,
+                    zoom: 16,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+                var map = new google.maps.Map(document.getElementById('mapDiv'),mapOptions);
+                var marker = new google.maps.Marker({position: latLng,map: map});
+            }
+            
+            //If not successfull, handle errors
+            function onError(error) {
+                var errString = '';
+                // Check to see if we have received an error code
+                if(error.code) {
+                    // If we have, handle it by case
+                    switch(error.code)
+                    {
+                        case 1: //Permission Denied
+                            errString =
+                                'Can not fetch the location information ' +
+                                'because the device does not have permission.';
+                            break;
+                        case 2: //Position is unavailable
+                            errString =
+                                'Can not fetch the location information ' +
+                                'because the device location could not ' +
+                                'be determined.';
+                            break;
+                        case 3: //Timeout Error
+                            errString =
+                                'Can not fetch the location within the ' +
+                                'specified time allocation.';
+                            break;
+                        default: //Unknown
+                            errString =
+                                'Can not fetch the location of the ' +
+                                'device because of an unknown error.';
+                            break;
+                    }
+                }
+                //Display errors in div
+                var element = document.getElementById('mapDiv');
+                element.innerHTML = errString;
+            }
+        </script>
+    </head>
+    <body>
+        <div id="mapDiv"><h3>Loading ...</h3></p>
+    </body>
 </html>
